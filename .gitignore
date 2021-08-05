@@ -129,20 +129,9 @@ dmypy.json
 .pyre/
 
 *.mp4
-backend/app/prof
 
 # VIM
 *.swp
 
 # Keep empty folders
 !.gitkeep
-
-# Ignore data folder for trainer
-darknet_data
-
-# Drone Builds
-secrets.txt
-.drone.yml
-
-# node modules for local cypress tests
-node_modules
