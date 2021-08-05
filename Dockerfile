@@ -3,6 +3,7 @@ FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
 LABEL maintainer "Francesco Gatti"
 
 ADD nv-tensorrt-repo-ubuntu1804-cuda10.2-trt7.0.0.11-ga-20191216_1-1_amd64.deb /tmp/trt.deb
+
 RUN apt-get update && dpkg -i /tmp/trt.deb && rm /tmp/trt.deb && apt-get update
 RUN apt install -y libnvinfer7=7.0.0-1+cuda10.2 libnvinfer-dev=7.0.0-1+cuda10.2
 RUN DEBIAN_FRONTEND=noninteractive apt install -y git wget libeigen3-dev libyaml-cpp-dev
@@ -56,7 +57,10 @@ RUN cd && \
 RUN apt clean
 # end of https://github.com/ceccocats/tkDNN/tree/master/docker
 
-RUN DEBIAN_FRONTEND=noninteractive apt update && apt-get install -y git wget libeigen3-dev
+RUN apt-get update
+RUN apt-get install -y python3.7
+RUN rm /usr/bin/python3
+RUN ln -s python3.7 /usr/bin/python3
 
 #install new cmake version
 RUN apt remove -y cmake
@@ -64,16 +68,6 @@ RUN wget https://cmake.org/files/v3.15/cmake-3.15.0.tar.gz && tar -zxvf cmake-3.
 RUN cd cmake-3.15.0 && ./bootstrap && make install
 
 RUN cmake --version
-
-# Source https://github.com/dusty-nv/jetson-containers/blob/master/Dockerfile.ros.foxy
-# compile yaml-cpp-0.6, which is needed (but is not in the 18.04 apt repo)
-RUN git clone --branch yaml-cpp-0.6.0 https://github.com/jbeder/yaml-cpp yaml-cpp-0.6 && \
-    cd yaml-cpp-0.6 && \
-    mkdir build && \
-    cd build && \
-    cmake -DBUILD_SHARED_LIBS=ON -D CMAKE_INSTALL_PREFIX=/usr/local/libyaml-cpp .. && \
-    make $MAKEFLAGS && \
-    make install
     
 WORKDIR /
 RUN ls
@@ -86,7 +80,6 @@ COPY ./tkdnn_python/utils.cpp /tkDNN/src/utils.cpp
 COPY ./tkdnn_python/darknetRT.cpp /tkDNN/demo/demo/darknetRT.cpp
 COPY ./tkdnn_python/darknetRT.h /tkDNN/demo/demo/darknetRT.h
 
-ADD data /model
 WORKDIR /tkDNN
 RUN mkdir build
 COPY yolo4tiny.cpp tests/darknet/yolo4tiny.cpp
@@ -98,6 +91,23 @@ RUN cd build && cmake .. -D CMAKE_INSTALL_PREFIX=/usr/local/tkDNN && \
     make install
 
 RUN git clone https://git.hipert.unimore.it/fgatti/darknet.git
-RUN cd darknet && make 
-RUN cd darknet && mkdir layers debug
+RUN cd darknet && \
+    make && \
+    mkdir layers debug
 
+RUN apt-get install -y python3-pip
+RUN python3 -m pip install --upgrade pip
+
+# installing dependencies
+RUN python3 -m pip install --no-cache-dir "uvicorn[standard]" async_generator aiofiles psutil "learning-loop-node==0.3.1" retry debugpy pytest-asyncio icecream pytest autopep8
+
+WORKDIR /app/
+
+COPY ./start.sh /start.sh
+ADD ./converter /app
+ENV PYTHONPATH=/app
+EXPOSE 80
+ENV HOST=learning-loop.ai
+ENV LANG C.UTF-8
+
+CMD ["/start.sh"]
