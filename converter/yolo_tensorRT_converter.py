@@ -9,6 +9,7 @@ import os
 import re
 import json
 from fastapi.encoders import jsonable_encoder
+from icecream import ic
 
 
 class YoloToTensorRTConverter(Converter):
@@ -16,15 +17,15 @@ class YoloToTensorRTConverter(Converter):
     async def _convert(self, model_information: ModelInformation) -> None:
         shutil.move(glob(f'{self.model_folder}/*.weights')
                     [0], f'{self.model_folder}/model.weights')
-
+        ic(jsonable_encoder(model_information))
         if not os.path.exists(f'{self.model_folder}/training.cfg'):
             raise Exception('training.cfg missing')
         if not os.path.exists(f'{self.model_folder}/model.weights'):
             raise Exception('model.weights missing')
         if not os.path.exists(f'{self.model_folder}/names.txt'):
             raise Exception('names.txt missing')
-
-        shutil.rmtree('/tkDNN/darknet_fp32.rt', ignore_errors=True)
+        # raise Exception('test converting ....')
+        shutil.rmtree('/tkDNN/darknet_fp16.rt', ignore_errors=True)
         shutil.rmtree('/tkDNN/darknet/layers', ignore_errors=True)
         os.makedirs('/tkDNN/darknet/layers')
 
@@ -35,17 +36,17 @@ class YoloToTensorRTConverter(Converter):
         with open('/model/model.json', 'w') as f:
             json.dump(jsonable_encoder(metadata), f)
 
-        cmd = f'export TKDNN_MODE=FP32 && cd /tkDNN/darknet && ./darknet export /model/training.cfg /model/model.weights layers'
+        cmd = f'export TKDNN_MODE=FP16 && cd /tkDNN/darknet && ./darknet export /model/training.cfg /model/model.weights layers'
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
         if p.returncode != 0:
             raise Exception(f'could not convert model. Command was : {cmd}')
 
-        cmd = 'cd /tkDNN/build && ./test_yolo4tiny'
+        cmd = 'export TKDNN_MODE=FP16 && cd /tkDNN/build && ./test_yolo4tiny'
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
 
-        shutil.move('/tkDNN/darknet_fp32.rt', '/model/model.rt')
+        shutil.move('/tkDNN/darknet_fp16.rt', '/model/model.rt')
 
     def parse_meta_data(self, model_information: ModelInformation):
         with open('/model/names.txt') as f:
