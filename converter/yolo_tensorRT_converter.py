@@ -10,6 +10,7 @@ import re
 import json
 from fastapi.encoders import jsonable_encoder
 from icecream import ic
+import re
 
 
 class YoloToTensorRTConverter(Converter):
@@ -25,28 +26,36 @@ class YoloToTensorRTConverter(Converter):
         if not os.path.exists(f'{self.model_folder}/names.txt'):
             raise Exception('names.txt missing')
         # raise Exception('test converting ....')
-        shutil.rmtree('/tkDNN/darknet_fp16.rt', ignore_errors=True)
-        shutil.rmtree('/tkDNN/darknet/layers', ignore_errors=True)
-        os.makedirs('/tkDNN/darknet/layers')
+        shutil.rmtree('/darknet_fp16.rt', ignore_errors=True)
+        shutil.rmtree('/darknet/layers', ignore_errors=True)
+        os.makedirs('/darknet/layers')
 
         shutil.rmtree('/model', ignore_errors=True)
         shutil.copytree(self.model_folder, '/model')
+
+        with open('/model/training.cfg', 'r+') as f:
+            fileContents = f.read()
+            fileContents = YoloToTensorRTConverter.set_batch_and_batchsize_to_1(
+                fileContents)
+            f.seek(0)
+            f.truncate()
+            f.write(fileContents)
 
         metadata = self.parse_meta_data(model_information)
         with open('/model/model.json', 'w') as f:
             json.dump(jsonable_encoder(metadata), f)
 
-        cmd = f'export TKDNN_MODE=FP16 && cd /tkDNN/darknet && ./darknet export /model/training.cfg /model/model.weights layers'
+        cmd = f'cd /darknet && ./darknet export /model/training.cfg /model/model.weights layers'
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
         if p.returncode != 0:
             raise Exception(f'could not convert model. Command was : {cmd}')
 
-        cmd = 'export TKDNN_MODE=FP16 && cd /tkDNN/build && ./test_yolo4tiny'
+        cmd = 'export TKDNN_MODE=FP16 && test_yolo4tiny'
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
 
-        shutil.move('/tkDNN/darknet_fp16.rt', '/model/model.rt')
+        shutil.move('/darknet_fp16.rt', '/model/model.rt')
 
     def parse_meta_data(self, model_information: ModelInformation):
         with open('/model/names.txt') as f:
@@ -84,3 +93,9 @@ class YoloToTensorRTConverter(Converter):
             if line.startswith("height="):
                 height = re.findall(r'\d+', line)[0]
         return width, height
+
+    @staticmethod
+    def set_batch_and_batchsize_to_1(text: str) -> str:
+        text = re.sub('batch\s*=\s*\d+', 'batch=1', text)
+        text = re.sub('subdivisions\s*=\s*\d+', 'subdivisions=1', text)
+        return text

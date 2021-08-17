@@ -34,7 +34,7 @@ container_name='yolo_tensorrt_converter'
 run_args=""
 run_args+="-v $(pwd)/converter:/app "
 run_args+="-v $HOME/data:/data "
-# run_args+="-v $HOME/learning_loop_node/learning_loop_node:/usr/local/lib/python3.7/dist-packages/learning_loop_node "
+# run_args+="-v $HOME/learning_loop_node/learning_loop_node:/usr/local/lib/python3.6/dist-packages/learning_loop_node "
 run_args+="-e HOST=learning-loop.ai "
 run_args+="-e USERNAME=$USERNAME -e PASSWORD=$PASSWORD "
 run_args+="--name $container_name "
