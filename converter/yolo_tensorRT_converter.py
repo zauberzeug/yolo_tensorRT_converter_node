@@ -11,7 +11,7 @@ import json
 from fastapi.encoders import jsonable_encoder
 from icecream import ic
 import re
-
+import logging
 
 class YoloToTensorRTConverter(Converter):
 
@@ -34,12 +34,11 @@ class YoloToTensorRTConverter(Converter):
         shutil.copytree(self.model_folder, '/model')
 
         with open('/model/training.cfg', 'r+') as f:
-            fileContents = f.read()
-            fileContents = YoloToTensorRTConverter.set_batch_and_batchsize_to_1(
-                fileContents)
+            cfg = f.read()
+            cfg = YoloToTensorRTConverter.set_batch_and_batchsize_to_1(cfg)
             f.seek(0)
             f.truncate()
-            f.write(fileContents)
+            f.write(cfg)
 
         metadata = self.parse_meta_data(model_information)
         with open('/model/model.json', 'w') as f:

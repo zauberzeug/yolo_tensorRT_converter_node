@@ -3,8 +3,8 @@ import uvicorn
 from learning_loop_node.converter.converter_node import ConverterNode
 import os
 import logging
-logging.getLogger().setLevel(logging.INFO)
-logging.basicConfig(level=logging.DEBUG)
+
+logging.basicConfig(level=logging.INFO)
 
 yolo_tensorRT_converter = YoloToTensorRTConverter(source_format='yolo', target_format='tensorrt')
 node = ConverterNode(uuid='85ef1a58-308d-4c80-8931-43d1f752f4f3', name='test', converter=yolo_tensorRT_converter)
