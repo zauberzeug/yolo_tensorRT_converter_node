@@ -16,7 +16,7 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --no-cache-dir --ignore-installed PyYAML
 # installing dependencies
 RUN python3 -m pip install --no-cache-dir "uvicorn[standard]" async_generator aiofiles psutil
-RUN python3 -m pip install --no-cache-dir "learning-loop-node==0.3.5" 
+RUN python3 -m pip install --no-cache-dir "learning-loop-node==0.3.8" 
 RUN python3 -m pip install --no-cache-dir retry debugpy pytest-asyncio icecream pytest autopep8
 
 RUN git clone https://git.hipert.unimore.it/fgatti/darknet.git
