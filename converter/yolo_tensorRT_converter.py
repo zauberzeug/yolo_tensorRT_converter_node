@@ -63,15 +63,8 @@ class YoloToTensorRTConverter(Converter):
             category.__dict__ for category in model_information.project_categories if category.name in names]
         assert len(categories) == len(
             names), f'could not match names {names} with categories {model_information.project_categories}'
-        width, height = self.read_width_and_height()
+        width, _ = self.read_width_and_height()
         return {
-            'host': 'https://learning-loop.ai',
-            'organization': model_information.organization,
-            'project': model_information.project,
-
-            'version': model_information.version,
-            'id': model_information.model_id,
-            'format': self.target_format,
             'categories': categories,
             'resolution': width,
         }
