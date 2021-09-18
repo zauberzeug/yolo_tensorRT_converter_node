@@ -20,7 +20,7 @@ int main() {
 
     // parse darknet network
     tk::dnn::Network *net = tk::dnn::darknetParser(cfg_path, wgs_path, name_path);
-    net->print();
+    //net->print();
 
     //convert network to tensorRT
     tk::dnn::NetworkRT *netRT = new tk::dnn::NetworkRT(net, net->getNetworkRTName(bin_path.c_str()));

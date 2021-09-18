@@ -7,6 +7,7 @@ then
     echo
     echo "  `basename $0` (b | build)        Build"
     echo "  `basename $0` (r | run)          Run"
+    echo "  `basename $0` (i | install)      Launch in background and autorestart on failure/reboot"
     echo "  `basename $0` (p | push)         Push"
     echo "  `basename $0` (d | rm)           Remove Container"
     echo "  `basename $0` (s | stop)         Stop"
@@ -37,6 +38,7 @@ run_args+="-v $HOME/data:/data "
 # run_args+="-v $HOME/learning_loop_node/learning_loop_node:/usr/local/lib/python3.6/dist-packages/learning_loop_node "
 run_args+="-e HOST=learning-loop.ai "
 run_args+="-e USERNAME=$USERNAME -e PASSWORD=$PASSWORD "
+run_args+="-e NVIDIA_VISIBLE_DEVICES=all "
 run_args+="--name $container_name "
 
 case $cmd in
@@ -48,6 +50,12 @@ case $cmd in
         ;;
     r | run)
 	    nvidia-docker run -it --rm $run_args ${image_name}-dev $cmd_args
+        ;;
+    i | install)
+        docker rm -f $container_name
+	    nvidia-docker run -d $run_args ${image_name} $cmd_args
+        echo "configuring $container_name to always restart"
+        docker update --restart=always $container_name      
         ;;
     p | push)
         docker push ${image_name}-dev 
