@@ -1,7 +1,7 @@
 import shutil
 from typing import List
 from learning_loop_node.converter.converter import Converter
-from learning_loop_node.converter.model_information import ModelInformation
+from learning_loop_node.model_information import ModelInformation
 import subprocess
 import shutil
 from glob import glob
@@ -12,6 +12,7 @@ from fastapi.encoders import jsonable_encoder
 from icecream import ic
 import re
 import logging
+
 
 class YoloToTensorRTConverter(Converter):
 
