@@ -6,8 +6,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-yolo_tensorRT_converter = YoloToTensorRTConverter(
-    source_format='yolo', target_format='tensorrt')
+yolo_tensorRT_converter = YoloToTensorRTConverter(source_format='yolo', target_format='tensorrt')
 node = ConverterNode(name='test', converter=yolo_tensorRT_converter)
 
 if __name__ == "__main__":

@@ -35,7 +35,7 @@ container_name='yolo_tensorrt_converter'
 run_args=""
 run_args+="-v $(pwd)/converter:/app "
 run_args+="-v $HOME/data:/data "
-# run_args+="-v $HOME/learning_loop_node/learning_loop_node:/usr/local/lib/python3.6/dist-packages/learning_loop_node "
+run_args+="-v $HOME/learning_loop_node/learning_loop_node:/usr/local/lib/python3.6/dist-packages/learning_loop_node "
 run_args+="-e HOST=learning-loop.ai "
 run_args+="-e USERNAME=$USERNAME -e PASSWORD=$PASSWORD "
 run_args+="-e NVIDIA_VISIBLE_DEVICES=all "
@@ -75,7 +75,7 @@ case $cmd in
         docker logs -f --tail 100 $cmd_args $container_name
         ;;
     e | exec)
-        docker exec $cmd_args $container_name
+        docker exec $container_name $cmd_args
         ;;
     a | attach)
         docker exec -it $cmd_args $container_name /bin/bash

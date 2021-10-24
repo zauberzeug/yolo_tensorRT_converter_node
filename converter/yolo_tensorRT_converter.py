@@ -61,9 +61,9 @@ class YoloToTensorRTConverter(Converter):
         with open('/model/names.txt') as f:
             names = [line.rstrip('\n') for line in f.readlines()]
         categories = [
-            category.__dict__ for category in model_information.project_categories if category.name in names]
+            category.__dict__ for category in model_information.categories if category.name in names]
         assert len(categories) == len(
-            names), f'could not match names {names} with categories {model_information.project_categories}'
+            names), f'could not match names {names} with categories {model_information.categories}'
         width, _ = self.read_width_and_height()
         return {
             'categories': categories,
